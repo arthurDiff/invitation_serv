@@ -1,25 +1,17 @@
-use actix_web::{App, HttpRequest, HttpServer, web};
+use invitation_serv::{config::Config, server::Server};
 
 #[tokio::main]
-async fn main() -> Result<(), std::io::Error> {
-    HttpServer::new(|| {
-        App::new()
-            .route(
-                "/",
-                web::get().to(async |req: HttpRequest| {
-                    let name = req.match_info().get("name").unwrap_or("World");
-                    format!("Hello {}!", &name)
-                }),
-            )
-            .route(
-                "/{name}",
-                web::get().to(async |req: HttpRequest| {
-                    let name = req.match_info().get("name").unwrap_or("World");
-                    format!("Hello {}!", &name)
-                }),
-            )
-    })
-    .bind("127.0.0.1:8000")?
-    .run()
-    .await
+async fn main() -> anyhow::Result<()> {
+    // TODO: NEED TELEMETRY AND I'M SURE BG WORKER
+    let config = Config::get().expect("Failed to read configuration");
+
+    // tasks should be loop
+    let server_task = tokio::spawn(Server::build(config).await?.run());
+
+    tokio::select! {
+        // SHOULD LOG WITH TRACING
+        o = server_task => println!("SERVER UNEXPECTEDLY CLOSED WITH: {:?}", o)
+    };
+
+    Ok(())
 }

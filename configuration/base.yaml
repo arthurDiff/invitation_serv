@@ -1,0 +1,9 @@
+server:
+  port: 8088
+  hmac_secret: "uber_secret_here_replace_later"
+database:
+  host: "localhost"
+  port: 5431
+  name: "invitation"
+  username: "postgres"
+  passowrd: "password"
