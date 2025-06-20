@@ -1,8 +1,13 @@
-use invitation_serv::{config::Config, server::Server};
+use invitation_serv::{
+    config::Config,
+    server::Server,
+    telemetry::{EnvLevel, init_new_subscriber},
+};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // TODO: NEED TELEMETRY AND I'M SURE BG WORKER
+    init_new_subscriber("invitation", EnvLevel::Info, std::io::stdout);
+    // TODO: NEED BG WORKER FOR SOMETHING
     let config = Config::get().expect("Failed to read configuration");
 
     // tasks should be loop
