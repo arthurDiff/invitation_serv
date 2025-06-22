@@ -15,6 +15,11 @@ name = "invitation_serv"
 actix-web = "4.11.0"
 anyhow = "1.0.98"
 config = { version = "0.15.11", default-features = false, features = ["yaml"] }
+reqwest = { version = "0.12.20", default-features = false, features = [
+    "json",
+    "rustls-tls",
+    "cookies",
+] }
 secrecy = { version = "0.10.3", features = ["serde"] }
 serde = { version = "1.0.219", default-features = false, features = ["derive"] }
 serde-aux = { version = "4.7.0", default-features = false }
@@ -38,6 +43,10 @@ tracing-log = "0.2.0"
 tracing-subscriber = { version = "0.3.19", features = [
     "registry",
     "env-filter",
+] }
+uuid = { version = "1.17.0", default-features = false, features = [
+    "v4",
+    "serde",
 ] }
 
 [dev-dependencies]
