@@ -19,10 +19,16 @@ unused-dep:
 d ?= false #docker build will be skipped as default
 init-db:
 	RUN_DOCKER=$(d) ./scripts/init_db.sh
-stop-db:
-	docker stop invitation_db && docker rm invitation_db
+# start-db:
+# 	docker start invitation_db
+# stop-db:
+#   docker stop invitation_db && docker rm invitation_db
+run-docker:
+	docker compose -f docker/docker-compose.yml up -d
+stop-docker:
+	docker compose -f docker/docker-compose.yml down 
 db:
-	psql -h localhost -p 5431 -U postgres -d invitation
+	psql -h localhost -p 5431 -U postgres -d postgres
 db-add:
 	export DATABASE_URL=postgres://postgres:password@localhost:5431/invitation \
 	sqlx migrate add $(name)

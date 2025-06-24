@@ -3,6 +3,7 @@ use invitation_serv::{
     server::Server,
     telemetry::{EnvLevel, init_new_subscriber},
 };
+use tokio::task::JoinError;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -14,9 +15,23 @@ async fn main() -> anyhow::Result<()> {
     let server_task = tokio::spawn(Server::build(config).await?.run());
 
     tokio::select! {
-        // SHOULD LOG WITH TRACING
-        o = server_task => println!("SERVER UNEXPECTEDLY CLOSED WITH: {:?}", o)
+        o = server_task => task_exit_report("API", o)
     };
 
     Ok(())
+}
+
+fn task_exit_report(
+    task_name: &str,
+    outcome: Result<Result<(), impl std::fmt::Debug + std::fmt::Display>, JoinError>,
+) {
+    match outcome {
+        Ok(Ok(())) => tracing::info!("{} existed", task_name),
+        Ok(Err(e)) => {
+            tracing::error!(error.cause_chain = ?e, error.message = %e, "{} failed", task_name)
+        }
+        Err(e) => {
+            tracing::error!(erro.cause_chain = ?e, error.message = %e, "{} task failed to complete", task_name)
+        }
+    }
 }

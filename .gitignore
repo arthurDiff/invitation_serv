@@ -1,1 +1,3 @@
 /target
+/configuration/*
+!/configuration/*.example.yaml

@@ -14,7 +14,9 @@ name = "invitation_serv"
 [dependencies]
 actix-web = "4.11.0"
 anyhow = "1.0.98"
+clerk-rs = { version = "0.4.1", features = ["actix"] }
 config = { version = "0.15.11", default-features = false, features = ["yaml"] }
+redis = { version = "0.32.2", features = ["tokio-comp"] }
 reqwest = { version = "0.12.20", default-features = false, features = [
     "json",
     "rustls-tls",
