@@ -37,6 +37,7 @@ pub struct Config {
     pub server: ServerConfig,
     pub database: DatabaseConfig,
     pub redis_url: SecretString,
+    pub clerk_key: SecretString,
 }
 
 impl Config {
@@ -107,9 +108,4 @@ impl DatabaseConfig {
     pub fn with_db(&self) -> PgConnectOptions {
         self.without_db().database(&self.name)
     }
-}
-
-#[derive(serde::Deserialize, Clone)]
-pub struct AuthConfig {
-    pub clerk_secret_key: SecretString,
 }

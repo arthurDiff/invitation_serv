@@ -1,5 +1,6 @@
 type UserId = String;
 
+#[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub struct UserSession(UserId);
 

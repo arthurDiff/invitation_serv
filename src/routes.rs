@@ -1,5 +1,5 @@
 mod health_check;
-mod home;
+mod protected_test;
 
 pub use health_check::*;
-pub use home::*;
+pub use protected_test::*;

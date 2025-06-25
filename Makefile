@@ -1,6 +1,6 @@
 
 run:
-	cargo run
+	cargo run | bunyan
 check:
 	cargo check
 test:
