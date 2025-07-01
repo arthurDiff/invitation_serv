@@ -54,7 +54,7 @@ impl TestApp {
 
         TestApp {
             port,
-            address: format!("http://127.0.0.1:{}", port),
+            address: format!("http://127.0.0.1:{port}"),
             db_pool,
             api_client,
             config,
