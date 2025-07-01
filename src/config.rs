@@ -25,7 +25,7 @@ impl TryFrom<String> for Environment {
             "local" => Ok(Self::Local),
             "prod" => Ok(Self::Prod),
             other => Err(format!(
-                "{} is not a supported environemtn. Use either 'local' or 'prod'.",
+                "{} is not a supported environment. Use either 'local' or 'prod'.",
                 other
             )),
         }
@@ -54,18 +54,28 @@ impl Config {
             .try_into()
             .expect("Failed to parse APP_ENV");
 
-        cfg::Config::builder()
+        let env_secret_config = config_dir.join(format!("{}.secret.yaml", env.as_str()));
+
+        let config_builder = cfg::Config::builder()
             .add_source(cfg::File::from(config_dir.join("base.yaml")))
             .add_source(cfg::File::from(
                 config_dir.join(format!("{}.yaml", env.as_str())),
-            ))
-            .add_source(
-                cfg::Environment::with_prefix("APP")
-                    .prefix_separator("_")
-                    .separator("__"),
-            )
-            .build()
-            .map(|c| c.try_deserialize::<Config>())?
+            ));
+
+        {
+            if env_secret_config.exists() {
+                config_builder.add_source(cfg::File::from(env_secret_config))
+            } else {
+                config_builder
+            }
+        }
+        .add_source(
+            cfg::Environment::with_prefix("APP")
+                .prefix_separator("_")
+                .separator("__"),
+        )
+        .build()
+        .map(|c| c.try_deserialize::<Config>())?
     }
 }
 

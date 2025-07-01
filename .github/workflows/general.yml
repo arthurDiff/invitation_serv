@@ -6,6 +6,7 @@ env:
     CARGO_TERM_COLOR: always
     SQLX_VERSION: 0.8.6
     SQLX_FEATURES: "rustls,postgres"
+    APP_CLERK_KEY: ${{ env.APP_CLERK_KEY }}
 
 jobs:
     test:

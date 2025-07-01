@@ -3,4 +3,3 @@ server:
   base_url: "http://127.0.0.1"
 database:
   require_ssl: false
-clerk_key: "<<CLERK_SECRET_KEY>>"

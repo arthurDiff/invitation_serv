@@ -1,3 +1,2 @@
 /target
-/configuration/*
-!/configuration/*.example.yaml
+/configuration/*.secret.yaml
