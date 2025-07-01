@@ -1,3 +1,5 @@
+use std::thread;
+
 use invitation_serv::{
     config::{self, Config, DatabaseConfig},
     server::Server,
@@ -18,6 +20,7 @@ static TRACING: Lazy<()> = Lazy::new(|| {
     }
 });
 
+#[allow(dead_code)]
 pub struct TestApp {
     pub port: u16,
     pub address: String,
@@ -61,17 +64,18 @@ impl TestApp {
 
 impl Drop for TestApp {
     fn drop(&mut self) {
-        let db_name = &self.config.database.name;
-        let cleanup = tokio::runtime::Runtime::new().unwrap().block_on(
-            self.db_pool
-                .execute(format!(r#"DROP DATABASE "{db_name}""#).as_str()),
-        );
-        cleanup.unwrap_or_else(|e| {
-            panic!(
-                "Failed cleaning up test db with name: {} with error: {}",
-                db_name, e
-            )
-        });
+        let db_config = self.config.database.clone();
+        let db_conn = self.db_pool.clone();
+        thread::spawn(move || {
+            tokio::runtime::Runtime::new().unwrap().block_on(async {
+                // close current connection to db;
+                db_conn.close().await;
+                // drop the created table;
+                cleanup_db(db_config).await;
+            })
+        })
+        .join()
+        .unwrap_or_else(|e| panic!("Failed cleaning up test db with error: {:?}", e));
     }
 }
 
@@ -95,4 +99,13 @@ async fn configure_db(config: &DatabaseConfig) -> PgPool {
         .expect("Failed to migrate to test db");
 
     db_pool
+}
+
+async fn cleanup_db(config: DatabaseConfig) {
+    let mut conn = PgConnection::connect_with(&config.without_db())
+        .await
+        .expect("Failed to form db connection for cleanup");
+    conn.execute(format!(r#"DROP DATABASE "{}";"#, config.name).as_str())
+        .await
+        .expect("Failed dropping test db");
 }
