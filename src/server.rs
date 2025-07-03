@@ -12,7 +12,7 @@ use tracing_actix_web::TracingLogger;
 
 use crate::{
     config::{Config, DatabaseConfig},
-    routes::{health_check, protected_path},
+    routes::{get_event, get_events, health_check},
 };
 
 pub struct Server {
@@ -69,7 +69,8 @@ async fn run(
                         None,
                         true,
                     ))
-                    .route("/protected", web::get().to(protected_path)),
+                    .route("/events", web::get().to(get_events))
+                    .route("/events/{event_id}", web::get().to(get_event)),
             )
             .app_data(web::Data::new(db_pool.clone()))
             .app_data(web::Data::new(redis_client.clone()))
@@ -87,5 +88,16 @@ Need:
 - rate limiting
 - idempotency
 - source block
-- need clerkjwt to user obj adapter
+*/
+
+/*
+Routes:
+
+/events
+/events/:eventId
+/events/:eventId/invites
+/events/:eventId/invites/:inviteId
+
+/group
+
 */
