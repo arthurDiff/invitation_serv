@@ -1,3 +1,3 @@
-# Invitation Server
+# Invite Server
 
 traveling planning made fun

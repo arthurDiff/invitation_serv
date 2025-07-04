@@ -88,11 +88,12 @@ Need:
 - rate limiting
 - idempotency
 - source block
+- storage provider S3
+- mailing service
 */
 
 /*
 Routes:
-
 /events
 /events/:eventId
 /events/:eventId/invites

@@ -1,6 +1,6 @@
 use std::thread;
 
-use invitation_serv::{
+use invite_server::{
     config::{self, Config, DatabaseConfig},
     server::Server,
     telemetry::{EnvLevel, init_new_subscriber},

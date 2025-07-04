@@ -17,7 +17,7 @@
 
 CREATE TABLE event (
     id uuid NOT NULL PRIMARY KEY,
-    user_id varchar(32) NOT NULL,
+    user_id varchar(32)[] NOT NULL,
     title TEXT NOT NULL,
     description TEXT,
     -- NEED USER MAPPING

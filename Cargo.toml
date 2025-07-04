@@ -1,5 +1,5 @@
 [package]
-name = "invitation_serv"
+name = "invite_server"
 authors = ["arthurDiff"]
 version = "0.1.0"
 edition = "2024"
@@ -9,7 +9,7 @@ path = "src/lib.rs"
 
 [[bin]]
 path = "src/main.rs"
-name = "invitation_serv"
+name = "invite_server"
 
 [dependencies]
 actix-web = "4.11.0"

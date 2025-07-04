@@ -1395,7 +1395,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "invitation_serv"
+name = "invite_server"
 version = "0.1.0"
 dependencies = [
  "actix-web",

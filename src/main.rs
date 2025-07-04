@@ -1,4 +1,4 @@
-use invitation_serv::{
+use invite_server::{
     config::Config,
     server::Server,
     telemetry::{EnvLevel, init_new_subscriber},

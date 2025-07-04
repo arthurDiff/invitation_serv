@@ -24,7 +24,9 @@ init-db:
 # stop-db:
 #   docker stop invitation_db && docker rm invitation_db
 run-docker:
-	docker compose -f docker/docker-compose.yml up -d
+	docker compose -f docker/docker-compose.yml up -d \
+	&& export DATABASE_URL=postgres://postgres:password@localhost:5431/invitation \
+	&& ./scripts/init_db.sh
 stop-docker:
 	docker compose -f docker/docker-compose.yml down 
 db:
