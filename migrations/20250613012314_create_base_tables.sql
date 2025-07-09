@@ -18,8 +18,8 @@ CREATE TABLE event (
     user_ids varchar(32)[] NOT NULL,
     name TEXT NOT NULL,
     description TEXT,
-    budget real,
-    date_range daterange,
+    budget real DEFAULT 0,
+    timeframe daterange,
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz
 );
@@ -60,7 +60,7 @@ CREATE TABLE destination (
     loc_id uuid NOT NULL UNIQUE,
     name TEXT NOT NULL,
     selected BOOLEAN DEFAULT FALSE,
-    date_range daterange, 
+    timeframe daterange, 
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz,
     event_id uuid NOT NULL,

@@ -26,7 +26,7 @@ init-db:
 run-docker:
 	docker compose -f docker/docker-compose.yml up -d \
 	&& ./scripts/init_db.sh
-stop-docker:
+down-docker:
 	docker compose -f docker/docker-compose.yml down 
 db:
 	psql -h localhost -p 5431 -U postgres -d postgres

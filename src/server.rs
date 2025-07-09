@@ -12,7 +12,7 @@ use tracing_actix_web::TracingLogger;
 
 use crate::{
     config::{Config, DatabaseConfig},
-    routes::{get_event, get_events, health_check},
+    routes::{create_event, get_event, get_events, health_check},
 };
 
 pub struct Server {
@@ -69,8 +69,12 @@ async fn run(
                         None,
                         true,
                     ))
-                    .route("/events", web::get().to(get_events))
-                    .route("/events/{event_id}", web::get().to(get_event)),
+                    .service(
+                        web::scope("/events")
+                            .route("", web::get().to(get_events))
+                            .route("", web::post().to(create_event))
+                            .route("/{event_id}", web::get().to(get_event)),
+                    ),
             )
             .app_data(web::Data::new(db_pool.clone()))
             .app_data(web::Data::new(redis_client.clone()))
