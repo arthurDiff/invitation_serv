@@ -12,7 +12,6 @@ use tracing_actix_web::TracingLogger;
 
 use crate::{
     config::{Config, DatabaseConfig},
-    request::get_json_config,
     routes::{create_event, get_event, get_events, health_check},
 };
 

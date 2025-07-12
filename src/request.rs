@@ -13,14 +13,14 @@ pub fn get_json_config() -> web::JsonConfig {
 }
 
 pub trait RequestDeserializer {
-    fn deserialize_to<T>(self) -> impl std::future::Future<Output = Result<T, anyhow::Error>>
+    fn deserialize_as<T>(self) -> impl std::future::Future<Output = Result<T, anyhow::Error>>
     where
         T: DeserializeOwned;
 }
 
 impl RequestDeserializer for web::Payload {
     /// convert payload as json deserialized  type
-    async fn deserialize_to<T>(mut self) -> Result<T, anyhow::Error>
+    async fn deserialize_as<T>(mut self) -> Result<T, anyhow::Error>
     where
         T: DeserializeOwned,
     {
@@ -39,7 +39,11 @@ impl RequestDeserializer for web::Payload {
 
 #[cfg(test)]
 mod tests {
-    use actix_web::{FromRequest, test::TestRequest, web::Payload};
+    use actix_web::{
+        FromRequest, dev,
+        test::TestRequest,
+        web::{Bytes, Payload},
+    };
 
     use super::*;
 
@@ -51,14 +55,31 @@ mod tests {
 
     #[tokio::test]
     async fn should_deserialize_correctly_when_payload_is_valid() {
-        let test_payload = TestRequest::default()
-            .set_json(TestJson {
-                hi: "world".into(),
-                bye: "nay".into(),
-            })
-            .to_request()
-            .take_payload();
+        let mut dev_payload = dev::Payload::from(Bytes::from(r#"{"hi":"world","bye":"nay","something":"dropped"}"#));
 
-        todo!()
+        let payload: Payload = web::Payload::from_request(&TestRequest::default().to_http_request(), &mut dev_payload)
+            .await
+            .expect("Expect payload to exists");
+
+        let json = payload
+            .deserialize_as::<TestJson>()
+            .await
+            .expect("Should have deserialized appropriately");
+
+        assert_eq!(json.hi, "world");
+        assert_eq!(json.bye, "nay");
+    }
+
+    #[tokio::test]
+    async fn should_fail_deserialization_if_req_payload_is_wrong() {
+        let mut dev_payload = dev::Payload::from(Bytes::from(r#"{"hworld":"world","bye":"nay"}"#));
+
+        let payload: Payload = web::Payload::from_request(&TestRequest::default().to_http_request(), &mut dev_payload)
+            .await
+            .expect("Expect payload to exists");
+
+        let json = payload.deserialize_as::<TestJson>().await;
+
+        assert!(json.is_err());
     }
 }
