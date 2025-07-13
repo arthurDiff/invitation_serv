@@ -21,10 +21,7 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn task_exit_report(
-    task_name: &str,
-    outcome: Result<Result<(), impl std::fmt::Debug + std::fmt::Display>, JoinError>,
-) {
+fn task_exit_report(task_name: &str, outcome: Result<Result<(), impl std::fmt::Debug + std::fmt::Display>, JoinError>) {
     match outcome {
         Ok(Ok(())) => tracing::info!("{} existed", task_name),
         Ok(Err(e)) => {

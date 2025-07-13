@@ -1,4 +1,5 @@
 pub mod config;
+pub mod idempotency;
 pub mod middlewares;
 pub mod models;
 pub mod request;

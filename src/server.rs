@@ -1,4 +1,4 @@
-use actix_web::{App, HttpServer, dev::Server as ActixServer, web};
+use actix_web::{App, HttpServer, dev::Server as ActixServer, middleware::from_fn, web};
 use clerk_rs::{
     ClerkConfiguration,
     clerk::Clerk,
@@ -12,6 +12,7 @@ use tracing_actix_web::TracingLogger;
 
 use crate::{
     config::{Config, DatabaseConfig},
+    middlewares::attach_idempotency_key,
     routes::{create_event, get_event, get_events, health_check},
 };
 
@@ -54,7 +55,7 @@ impl Server {
 async fn run(
     listener: TcpListener,
     db_pool: PgPool,
-    redis_client: RedisClient,
+    redis: RedisClient,
     clerk: Clerk,
 ) -> Result<ActixServer, anyhow::Error> {
     Ok(HttpServer::new(move || {
@@ -69,6 +70,7 @@ async fn run(
                         None,
                         true,
                     ))
+                    .wrap(from_fn(attach_idempotency_key))
                     .service(
                         web::scope("/events")
                             .route("", web::get().to(get_events))
@@ -77,7 +79,7 @@ async fn run(
                     ),
             )
             .app_data(web::Data::new(db_pool.clone()))
-            .app_data(web::Data::new(redis_client.clone()))
+            .app_data(web::Data::new(redis.clone()))
     })
     .listen(listener)?
     .run())

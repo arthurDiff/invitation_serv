@@ -24,11 +24,7 @@ impl EnvLevel {
     }
 }
 
-pub fn generate_subscriber<Sink>(
-    name: &str,
-    env_filter: EnvLevel,
-    sink: Sink,
-) -> impl Subscriber + Sync + Send
+pub fn generate_subscriber<Sink>(name: &str, env_filter: EnvLevel, sink: Sink) -> impl Subscriber + Sync + Send
 where
     Sink: for<'a> MakeWriter<'a> + Sync + Send + 'static,
 {
