@@ -1,9 +1,16 @@
+mod persistence;
+
 use actix_web::http::header::HeaderValue;
 
-///
-/// Expected key format <op_name>-uuid
+pub use persistence::*;
 #[derive(Debug)]
 pub struct IdempotencyKey(String);
+
+impl IdempotencyKey {
+    pub fn attach(self, op_name: &str, user_id: &str) -> Self {
+        IdempotencyKey(format!("{}__{op_name}__{user_id}", &self.0))
+    }
+}
 
 impl TryFrom<&HeaderValue> for IdempotencyKey {
     type Error = anyhow::Error;
@@ -28,7 +35,3 @@ impl std::ops::Deref for IdempotencyKey {
         &self.0
     }
 }
-
-pub struct Idempotency;
-
-impl Idempotency {}

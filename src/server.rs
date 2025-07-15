@@ -12,7 +12,6 @@ use tracing_actix_web::TracingLogger;
 
 use crate::{
     config::{Config, DatabaseConfig},
-    middlewares::attach_idempotency_key,
     routes::{create_event, get_event, get_events, health_check},
 };
 
@@ -70,7 +69,6 @@ async fn run(
                         None,
                         true,
                     ))
-                    .wrap(from_fn(attach_idempotency_key))
                     .service(
                         web::scope("/events")
                             .route("", web::get().to(get_events))
@@ -103,8 +101,6 @@ Routes:
 /events
 /events/:eventId
 /events/:eventId/invites
-/events/:eventId/invites/:inviteId
-
 /group
 
 */
