@@ -23,27 +23,22 @@ pub struct CreateEventRequest {
     timeframe: Option<DateRange>,
 }
 
-#[tracing::instrument(name = "Creating an event", skip(req, redis, sess, payload), fields(user_id=sess.sub))]
+#[tracing::instrument(name = "Creating an event", skip(req, redis, sess, _payload), fields(user_id=sess.sub))]
 pub async fn create_event(
     sess: web::ReqData<ClerkJwt>,
     req: HttpRequest,
     redis: web::Data<redis::Client>,
-    payload: web::Payload,
+    _payload: web::Payload,
 ) -> impl Responder {
     if let Some(idem_header) = req.headers().get("idempotency-key") {
-        println!("\nHERE TOO RIGHT?\n");
         let idem_key = match IdempotencyKey::try_from(idem_header).map_err(e500) {
             Ok(key) => key,
             Err(err_res) => return err_res,
         }
         .attach("create_event", &sess.sub);
 
-        println!("{:?}", idem_key);
-        let x = try_get_response(&redis, &idem_key);
-        println!("{:?}", x);
+        let _ = try_get_response(&redis, &idem_key);
     }
-    println!("WAT????");
-    // let _req_body = payload.deserialize_as::<CreateEventRequest>().await;
 
     HttpResponse::Ok().finish()
 }

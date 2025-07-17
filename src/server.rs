@@ -1,4 +1,4 @@
-use actix_web::{App, HttpServer, dev::Server as ActixServer, middleware::from_fn, web};
+use actix_web::{App, HttpServer, dev::Server as ActixServer, web};
 use clerk_rs::{
     ClerkConfiguration,
     clerk::Clerk,
