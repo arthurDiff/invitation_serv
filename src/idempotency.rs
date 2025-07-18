@@ -1,6 +1,6 @@
 mod persistence;
 
-use actix_web::http::header::HeaderValue;
+use actix_web::http::header::HeaderMap;
 
 pub use persistence::*;
 #[derive(Debug)]
@@ -12,10 +12,14 @@ impl IdempotencyKey {
     }
 }
 
-impl TryFrom<&HeaderValue> for IdempotencyKey {
+impl TryFrom<&HeaderMap> for IdempotencyKey {
     type Error = anyhow::Error;
 
-    fn try_from(hv: &HeaderValue) -> Result<Self, Self::Error> {
+    fn try_from(header: &HeaderMap) -> Result<Self, Self::Error> {
+        let Some(hv) = header.get("idempotency-key") else {
+            return Ok(Self(uuid::Uuid::new_v4().to_string()));
+        };
+
         let Ok(header_key) = hv.to_str() else {
             anyhow::bail!("idempotency-key header value is invalid format")
         };

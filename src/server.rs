@@ -4,7 +4,7 @@ use clerk_rs::{
     clerk::Clerk,
     validators::{actix::ClerkMiddleware, jwks::MemoryCacheJwksProvider},
 };
-use redis::Client as RedisClient;
+use redis::aio::MultiplexedConnection;
 use secrecy::ExposeSecret;
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use std::net::TcpListener;
@@ -24,7 +24,9 @@ impl Server {
     pub async fn build(config: Config) -> Result<Self, anyhow::Error> {
         // dep inj
         let db_pool = get_connection_pool(&config.database);
-        let redis = RedisClient::open(config.redis_url.expose_secret())?;
+        let redis_conn = redis::Client::open(config.redis_url.expose_secret())?
+            .get_multiplexed_async_connection()
+            .await?;
         let clerk = Clerk::new(ClerkConfiguration::new(
             None,
             None,
@@ -38,7 +40,7 @@ impl Server {
 
         Ok(Self {
             port,
-            server: run(listener, db_pool, redis, clerk).await?,
+            server: run(listener, db_pool, redis_conn, clerk).await?,
         })
     }
 
@@ -54,7 +56,7 @@ impl Server {
 async fn run(
     listener: TcpListener,
     db_pool: PgPool,
-    redis: RedisClient,
+    redis_conn: MultiplexedConnection,
     clerk: Clerk,
 ) -> Result<ActixServer, anyhow::Error> {
     Ok(HttpServer::new(move || {
@@ -77,7 +79,7 @@ async fn run(
                     ),
             )
             .app_data(web::Data::new(db_pool.clone()))
-            .app_data(web::Data::new(redis.clone()))
+            .app_data(web::Data::new(redis_conn.clone()))
     })
     .listen(listener)?
     .run())
