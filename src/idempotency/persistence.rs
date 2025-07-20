@@ -48,3 +48,27 @@ pub async fn try_get_response(
 
     Ok(Some(response.json(saved_res.body)))
 }
+
+pub async fn rollback_precache(
+    redis_conn: &mut MultiplexedConnection,
+    key: &IdempotencyKey,
+) -> Result<(), actix_web::Error> {
+    _ = redis_conn.del(&key.0).await.map_err(e500)?;
+    Ok(())
+}
+
+pub async fn save_response(
+    redis_conn: &mut MultiplexedConnection,
+    key: &IdempotencyKey,
+    res_body: &impl serde::Serialize,
+) -> Result<(), actix_web::Error> {
+    if let Err(err) = redis_conn
+        .set_ex(&key.0, serde_json::to_string(res_body).map_err(e500)?, 900)
+        .await
+        .map_err(e500)
+    {
+        _ = rollback_precache(redis_conn, key).await?;
+        return Err(err);
+    }
+    Ok(())
+}

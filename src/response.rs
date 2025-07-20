@@ -1,6 +1,5 @@
 #[derive(serde::Serialize)]
 pub struct ResponseBody<T> {
-    pub success: bool,
     pub message: String,
     pub data: Option<T>,
 }

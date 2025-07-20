@@ -19,7 +19,8 @@ CREATE TABLE event (
     name TEXT NOT NULL,
     description TEXT,
     budget real DEFAULT 0,
-    timeframe daterange,
+    starts_at timestamptz,
+    ends_at timestamptz,
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz
 );
@@ -60,7 +61,8 @@ CREATE TABLE destination (
     loc_id uuid NOT NULL UNIQUE,
     name TEXT NOT NULL,
     selected BOOLEAN DEFAULT FALSE,
-    timeframe daterange, 
+    starts_at timestamptz,
+    ends_at timestamptz,
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz,
     event_id uuid NOT NULL,
