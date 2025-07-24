@@ -12,7 +12,7 @@ fi
 # setting db config
 DB_USER="${POSTGRES_USER:=postgres}"
 DB_PASSWORD="${POSTGRES_PASSWORD:=password}"
-DB_NAME="${POSTGRES_DB=invitation}"
+DB_NAME="${POSTGRES_DB=invite}"
 DB_PORT="${POSGRES_PORT:=5431}"
 DB_HOST="${POSTGRES_HOST:=localhost}"
 
@@ -20,7 +20,7 @@ DB_HOST="${POSTGRES_HOST:=localhost}"
 if [ $RUN_DOCKER  = true ]
 then
 docker run\
-    --name invitation_db \
+    --name invite \
     -e POSTGRES_USER=${DB_USER} \
     -e POSTGRES_PASSWORD=${DB_PASSWORD} \
     -e POSTGRES_DB=${DB_NAME} \

@@ -1,4 +1,4 @@
-#[derive(serde::Serialize)]
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct ResponseBody<T> {
     pub message: String,
     pub data: Option<T>,

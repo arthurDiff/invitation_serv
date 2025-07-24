@@ -7,7 +7,7 @@ use tokio::task::JoinError;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    init_new_subscriber("invitation", EnvLevel::Info, std::io::stdout);
+    init_new_subscriber("invite", EnvLevel::Info, std::io::stdout);
     // TODO: NEED BG WORKER FOR SOMETHING
     let config = Config::get().expect("Failed to read configuration");
 

@@ -1,3 +1,4 @@
+pub mod async_ext;
 pub mod config;
 pub mod idempotency;
 pub mod middlewares;

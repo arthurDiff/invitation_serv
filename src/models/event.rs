@@ -4,7 +4,6 @@ use uuid::Uuid;
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Event {
     pub id: Uuid,
-    pub user_id: String,
     pub name: String,
     pub description: Option<String>,
     pub budget: Option<f32>,

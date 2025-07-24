@@ -11,11 +11,7 @@ CREATE TYPE member_role AS ENUM ('owner', 'facilitator', 'attendee');
 
 -- EVENT TABLE
 CREATE TABLE event (
-    id uuid NOT NULL PRIMARY KEY,
-    -- user_id
-    owner_id varchar(32) NOT NULL,
-    -- user_ids
-    user_ids varchar(32)[] NOT NULL,
+    id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     description TEXT,
     budget real DEFAULT 0,
@@ -30,7 +26,7 @@ CREATE TRIGGER update_event_updated_at BEFORE UPDATE ON event FOR EACH ROW EXECU
 
 -- MEMBER TABLE
 CREATE TABLE member(
-    id uuid NOT NULL PRIMARY KEY,
+    id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id varchar(32) NOT NULL,
     event_id uuid NOT NULL,
     role member_role NOT NULL DEFAULT 'attendee'::member_role,
@@ -44,7 +40,7 @@ CREATE TRIGGER update_member_updated_at BEFORE UPDATE ON member FOR EACH ROW EXE
 
 -- INVITE TABLE
 CREATE TABLE invite(
-    id uuid NOT NULL PRIMARY KEY,
+    id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id varchar(32),
     email text,
     accepted BOOLEAN NOT NULL DEFAULT FALSE,
@@ -57,7 +53,7 @@ CREATE TABLE invite(
 
 -- DESTINATION TABLE
 CREATE TABLE destination (
-    id uuid NOT NULL PRIMARY KEY,
+    id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
     loc_id uuid NOT NULL UNIQUE,
     name TEXT NOT NULL,
     selected BOOLEAN DEFAULT FALSE,
@@ -76,7 +72,7 @@ CREATE TRIGGER update_destination_updated_at BEFORE UPDATE ON destination FOR EA
 
 -- LOCATION TABLE
 CREATE TABLE location(
-    id uuid NOT NULL PRIMARY KEY,
+    id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
     street_1 TEXT NOT NULL,
     street_2 TEXT,
     province TEXT NOT NULL,

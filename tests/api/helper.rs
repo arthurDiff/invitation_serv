@@ -12,7 +12,7 @@ use once_cell::sync::Lazy;
 use uuid::Uuid;
 
 static TRACING: Lazy<()> = Lazy::new(|| {
-    let (name, env_filter) = ("test_invitation", EnvLevel::Debug);
+    let (name, env_filter) = ("test_invite", EnvLevel::Debug);
     if std::env::var("TEST_LOG").is_ok() {
         init_new_subscriber(name, env_filter, std::io::stdout);
     } else {

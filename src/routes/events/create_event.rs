@@ -5,6 +5,7 @@ use redis::aio::MultiplexedConnection;
 use sqlx::PgPool;
 
 use crate::{
+    async_ext::AsyncExt,
     idempotency::{IdempotencyKey, rollback_precache, save_response, try_get_response},
     models::Event,
     response::{ResponseBody, e400, e500},
@@ -39,52 +40,58 @@ pub async fn create_event(
         return Ok(saved_res);
     }
 
-    let new_evt = match sqlx::query!(
+    let mut tx = pool
+        .begin()
+        .await
+        .map_err_async(|e| async {
+            _ = rollback_precache(&mut redis_conn.clone(), &idem_key).await;
+            e500(e)
+        })
+        .await?;
+
+    let new_evt = sqlx::query_as!(
+        Event,
         r#"INSERT INTO event (
-            owner_id,
             name,
             description,
             budget,
             starts_at,
             ends_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING id, created_at;
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *;
         "#,
-        sess.sub,
         req_data.name,
         req_data.description,
         req_data.budget,
         req_data.starts_at,
         req_data.ends_at
     )
-    .fetch_one(pool.get_ref())
+    .fetch_one(&mut *tx)
+    .await
+    .map_err_async(|e| async {
+        _ = rollback_precache(&mut redis_conn.clone(), &idem_key).await;
+        e500(e)
+    })
+    .await?;
+
+    if let Err(member_err) = sqlx::query!(
+        r#"INSERT INTO member (user_id,event_id,role)
+        VALUES ($1, $2, 'owner'::member_role);"#,
+        sess.sub,
+        new_evt.id,
+    )
+    .execute(&mut *tx)
     .await
     .map_err(e500)
     {
-        Ok(new_e) => new_e,
-        Err(err) => {
-            _ = rollback_precache(&mut redis_conn, &idem_key).await?;
-            return Err(err);
-        }
+        return Err(member_err);
     };
 
-    let res_body = ResponseBody::<Event> {
+    let res = HttpResponse::Ok().json(ResponseBody::<Event> {
         message: "event created".into(),
-        data: Some(Event {
-            id: new_evt.id,
-            user_id: sess.sub.clone(),
-            name: req_data.name.clone(),
-            description: req_data.description.clone(),
-            budget: req_data.budget,
-            starts_at: req_data.starts_at,
-            ends_at: req_data.ends_at,
-            created_at: new_evt.created_at,
-            updated_at: None,
-        }),
-    };
+        data: Some(new_evt),
+    });
 
-    _ = save_response(&mut redis_conn, &idem_key, &res_body).await?;
-
-    Ok(HttpResponse::Ok().json(res_body))
+    save_response(&mut redis_conn, &idem_key, res).await
 }
