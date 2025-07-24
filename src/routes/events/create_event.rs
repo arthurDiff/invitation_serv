@@ -1,4 +1,4 @@
-use actix_web::{HttpRequest, HttpResponse, web};
+use actix_web::{HttpRequest, HttpResponse, http::StatusCode, web};
 use chrono::{DateTime, Utc};
 use clerk_rs::validators::authorizer::ClerkJwt;
 use redis::aio::MultiplexedConnection;
@@ -88,10 +88,15 @@ pub async fn create_event(
         return Err(member_err);
     };
 
-    let res = HttpResponse::Ok().json(ResponseBody::<Event> {
-        message: "event created".into(),
-        data: Some(new_evt),
-    });
-
-    save_response(&mut redis_conn, &idem_key, res).await
+    save_response(
+        &mut redis_conn,
+        &idem_key,
+        StatusCode::OK,
+        vec![],
+        ResponseBody::<Event> {
+            message: "event created".into(),
+            data: Some(new_evt),
+        },
+    )
+    .await
 }
