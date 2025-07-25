@@ -3,6 +3,7 @@ use chrono::{DateTime, Utc};
 use clerk_rs::validators::authorizer::ClerkJwt;
 use redis::aio::MultiplexedConnection;
 use sqlx::PgPool;
+use tracing_log::log;
 
 use crate::{
     async_ext::AsyncExt,
@@ -37,6 +38,7 @@ pub async fn create_event(
 
     let mut redis_conn = redis.get_ref().clone();
     if let Some(saved_res) = try_get_response(&mut redis_conn, &idem_key).await? {
+        log::info!("Returning cached result from idem-key: {:?}", &idem_key);
         return Ok(saved_res);
     }
 
@@ -44,7 +46,7 @@ pub async fn create_event(
         .begin()
         .await
         .map_err_async(|e| async {
-            _ = rollback_precache(&mut redis_conn.clone(), &idem_key).await;
+            _ = rollback_precache(&mut redis_conn, &idem_key).await;
             e500(e)
         })
         .await?;
@@ -70,7 +72,7 @@ pub async fn create_event(
     .fetch_one(&mut *tx)
     .await
     .map_err_async(|e| async {
-        _ = rollback_precache(&mut redis_conn.clone(), &idem_key).await;
+        _ = rollback_precache(&mut redis_conn, &idem_key).await;
         e500(e)
     })
     .await?;
@@ -83,9 +85,9 @@ pub async fn create_event(
     )
     .execute(&mut *tx)
     .await
-    .map_err(e500)
     {
-        return Err(member_err);
+        _ = rollback_precache(&mut redis_conn, &idem_key).await;
+        return Err(e500(member_err));
     };
 
     save_response(

@@ -15,7 +15,7 @@ pub struct SavedResponse {
 }
 
 impl SavedResponse {
-    fn to_http_response(self) -> Result<HttpResponse, actix_web::Error> {
+    fn convert_to_htp_response(self) -> Result<HttpResponse, actix_web::Error> {
         let mut response = HttpResponse::build(StatusCode::from_u16(self.status_code).map_err(e500)?);
 
         self.headers.into_iter().for_each(|(k, v)| {
@@ -52,7 +52,7 @@ pub async fn try_get_response(
 
     let saved_res = serde_json::from_str::<SavedResponse>(&saved_res).map_err(e500)?;
 
-    Ok(Some(saved_res.to_http_response()?))
+    Ok(Some(saved_res.convert_to_htp_response()?))
 }
 
 pub async fn save_response(
@@ -73,11 +73,11 @@ pub async fn save_response(
         .await
         .map_err(e500)
     {
-        _ = rollback_precache(redis_conn, key).await?;
+        rollback_precache(redis_conn, key).await?;
         return Err(err);
     }
 
-    s_res.to_http_response()
+    s_res.convert_to_htp_response()
 }
 
 pub async fn rollback_precache(

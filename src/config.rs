@@ -57,9 +57,7 @@ impl Config {
 
         let config_builder = cfg::Config::builder()
             .add_source(cfg::File::from(config_dir.join("base.yaml")))
-            .add_source(cfg::File::from(
-                config_dir.join(format!("{}.yaml", env.as_str())),
-            ));
+            .add_source(cfg::File::from(config_dir.join(format!("{}.yaml", env.as_str()))));
 
         {
             if env_secret_config.exists() {

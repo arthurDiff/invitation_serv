@@ -6,9 +6,10 @@ use invite_server::{
     telemetry::{EnvLevel, init_new_subscriber},
 };
 use reqwest::Client;
+use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 
-use once_cell::sync::Lazy;
+use once_cell::sync::{Lazy, OnceCell};
 use uuid::Uuid;
 
 static TRACING: Lazy<()> = Lazy::new(|| {
@@ -19,6 +20,8 @@ static TRACING: Lazy<()> = Lazy::new(|| {
         init_new_subscriber(name, env_filter, std::io::sink);
     }
 });
+
+pub static SESSION_TOKEN: OnceCell<String> = OnceCell::new();
 
 #[allow(dead_code)]
 pub struct TestApp {
@@ -38,6 +41,13 @@ impl TestApp {
             c.server.port = 0;
             c
         };
+
+        if SESSION_TOKEN.get().is_none() {
+            SESSION_TOKEN
+                .set(get_user_session(config.clerk_key.expose_secret()).await)
+                .expect("Failed setting static session");
+        };
+
         let db_pool = configure_db(&config.database).await;
         let test_serv = Server::build(config.clone())
             .await
@@ -108,4 +118,50 @@ async fn cleanup_db(config: DatabaseConfig) {
     conn.execute(format!(r#"DROP DATABASE "{}";"#, config.name).as_str())
         .await
         .expect("Failed dropping test db");
+}
+
+#[allow(dead_code)]
+const TEST_USER: &str = "user_2ysgqtTDuD2gPviOwynN5mlL36f";
+
+#[allow(dead_code)]
+#[derive(serde::Deserialize)]
+struct TestSession {
+    id: String,
+    #[serde(flatten)]
+    res: serde_json::Map<String, serde_json::Value>,
+}
+
+#[allow(dead_code)]
+#[derive(serde::Deserialize)]
+struct TestSessionToken {
+    jwt: String,
+    #[serde(flatten)]
+    res: serde_json::Map<String, serde_json::Value>,
+}
+
+pub async fn get_user_session(clerk_key: &str) -> String {
+    let client = reqwest::Client::new();
+
+    let test_session = client
+        .post("https://api.clerk.com/v1/sessions")
+        .header("Authorization", format!("Bearer {clerk_key}"))
+        .json(&serde_json::json!({"user_id": TEST_USER}))
+        .send()
+        .await
+        .expect("Failed to get user session")
+        .json::<TestSession>()
+        .await
+        .expect("Failed to deserialize user session");
+
+    client
+        .post(format!("https://api.clerk.com/v1/sessions/{}/tokens", test_session.id))
+        .header("Authorization", format!("Bearer {clerk_key}"))
+        .json(&serde_json::json!({"expires_in_seconds": 600}))
+        .send()
+        .await
+        .expect("Failed to get session token")
+        .json::<TestSessionToken>()
+        .await
+        .expect("Failed to deserialize session token")
+        .jwt
 }
