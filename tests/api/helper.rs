@@ -42,11 +42,7 @@ impl TestApp {
             c
         };
 
-        if SESSION_TOKEN.get().is_none() {
-            SESSION_TOKEN
-                .set(get_user_session(config.clerk_key.expose_secret()).await)
-                .expect("Failed setting static session");
-        };
+        SESSION_TOKEN.get_or_init(|| get_user_session(config.clerk_key.expose_secret().into()));
 
         let db_pool = configure_db(&config.database).await;
         let test_serv = Server::build(config.clone())
@@ -72,22 +68,23 @@ impl TestApp {
     }
 }
 
-impl Drop for TestApp {
-    fn drop(&mut self) {
-        let db_config = self.config.database.clone();
-        let db_conn = self.db_pool.clone();
-        thread::spawn(move || {
-            tokio::runtime::Runtime::new().unwrap().block_on(async {
-                // close current connection to db;
-                db_conn.close().await;
-                // drop the created table;
-                cleanup_db(db_config).await;
-            })
-        })
-        .join()
-        .unwrap_or_else(|e| panic!("Failed cleaning up test db with error: {:?}", e));
-    }
-}
+/// SINCE I DROP DOCKER INSTANCE SO OFTEN I WON'T CLEAN UP
+// impl Drop for TestApp {
+//     fn drop(&mut self) {
+//         let db_config = self.config.database.clone();
+//         let db_conn = self.db_pool.clone();
+//         thread::spawn(move || {
+//             tokio::runtime::Runtime::new().unwrap().block_on(async {
+//                 // close current connection to db;
+//                 db_conn.close().await;
+//                 // drop the created table;
+//                 cleanup_db(db_config).await;
+//             })
+//         })
+//         .join()
+//         .unwrap_or_else(|e| panic!("Failed cleaning up test db with error: {:?}", e));
+//     }
+// }
 
 async fn configure_db(config: &DatabaseConfig) -> PgPool {
     // Create a new db for test
@@ -139,29 +136,37 @@ struct TestSessionToken {
     res: serde_json::Map<String, serde_json::Value>,
 }
 
-pub async fn get_user_session(clerk_key: &str) -> String {
+fn get_user_session(clerk_key: String) -> String {
     let client = reqwest::Client::new();
 
-    let test_session = client
-        .post("https://api.clerk.com/v1/sessions")
-        .header("Authorization", format!("Bearer {clerk_key}"))
-        .json(&serde_json::json!({"user_id": TEST_USER}))
-        .send()
-        .await
-        .expect("Failed to get user session")
-        .json::<TestSession>()
-        .await
-        .expect("Failed to deserialize user session");
+    thread::spawn(move || {
+        tokio::runtime::Runtime::new()
+            .expect("Failed to init tokio runtime to get session token")
+            .block_on(async {
+                let test_session = client
+                    .post("https://api.clerk.com/v1/sessions")
+                    .header("Authorization", format!("Bearer {clerk_key}"))
+                    .json(&serde_json::json!({"user_id": TEST_USER}))
+                    .send()
+                    .await
+                    .expect("Failed to get user session")
+                    .json::<TestSession>()
+                    .await
+                    .expect("Failed to deserialize user session");
 
-    client
-        .post(format!("https://api.clerk.com/v1/sessions/{}/tokens", test_session.id))
-        .header("Authorization", format!("Bearer {clerk_key}"))
-        .json(&serde_json::json!({"expires_in_seconds": 600}))
-        .send()
-        .await
-        .expect("Failed to get session token")
-        .json::<TestSessionToken>()
-        .await
-        .expect("Failed to deserialize session token")
-        .jwt
+                client
+                    .post(format!("https://api.clerk.com/v1/sessions/{}/tokens", test_session.id))
+                    .header("Authorization", format!("Bearer {clerk_key}"))
+                    .json(&serde_json::json!({"expires_in_seconds": 600}))
+                    .send()
+                    .await
+                    .expect("Failed to get session token")
+                    .json::<TestSessionToken>()
+                    .await
+                    .expect("Failed to deserialize session token")
+                    .jwt
+            })
+    })
+    .join()
+    .unwrap_or_else(|e| panic!("Failed cleaning up test db with error: {:?}", e))
 }

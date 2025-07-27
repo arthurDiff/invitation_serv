@@ -1,7 +1,7 @@
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct ResponseBody<T> {
     pub message: String,
-    pub data: Option<T>,
+    pub data: T,
 }
 
 pub fn e500<T>(e: T) -> actix_web::Error

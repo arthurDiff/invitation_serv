@@ -97,7 +97,7 @@ pub async fn create_event(
         vec![],
         ResponseBody::<Event> {
             message: "event created".into(),
-            data: Some(new_evt),
+            data: new_evt,
         },
     )
     .await
