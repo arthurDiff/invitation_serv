@@ -108,14 +108,14 @@ async fn configure_db(config: &DatabaseConfig) -> PgPool {
     db_pool
 }
 
-async fn cleanup_db(config: DatabaseConfig) {
-    let mut conn = PgConnection::connect_with(&config.without_db())
-        .await
-        .expect("Failed to form db connection for cleanup");
-    conn.execute(format!(r#"DROP DATABASE "{}";"#, config.name).as_str())
-        .await
-        .expect("Failed dropping test db");
-}
+// async fn cleanup_db(config: DatabaseConfig) {
+//     let mut conn = PgConnection::connect_with(&config.without_db())
+//         .await
+//         .expect("Failed to form db connection for cleanup");
+//     conn.execute(format!(r#"DROP DATABASE "{}";"#, config.name).as_str())
+//         .await
+//         .expect("Failed dropping test db");
+// }
 
 #[allow(dead_code)]
 const TEST_USER: &str = "user_2ysgqtTDuD2gPviOwynN5mlL36f";
