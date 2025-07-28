@@ -154,7 +154,7 @@ fn get_user_session(clerk_key: String) -> String {
                     .expect("Failed to get user session")
                     .json::<TestSession>()
                     .await
-                    .expect("Failed to deserialize user session");
+                    .unwrap_or_else(|err| panic!("Failed to deserialize user session with err {:?}", err));
 
                 client
                     .post(format!("https://api.clerk.com/v1/sessions/{}/tokens", test_session.id))
@@ -165,7 +165,7 @@ fn get_user_session(clerk_key: String) -> String {
                     .expect("Failed to get session token")
                     .json::<TestSessionToken>()
                     .await
-                    .expect("Failed to deserialize session token")
+                    .unwrap_or_else(|err| panic!("Failed to deserialize user session with err {:?}", err))
                     .jwt
             })
     })
