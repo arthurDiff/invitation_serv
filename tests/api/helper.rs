@@ -12,6 +12,8 @@ use sqlx::{Connection, Executor, PgConnection, PgPool};
 use once_cell::sync::{Lazy, OnceCell};
 use uuid::Uuid;
 
+//TODO: NEED TO HAVE TEST SPECIFIC REDIS GROUP TOO
+
 static TRACING: Lazy<()> = Lazy::new(|| {
     let (name, env_filter) = ("test_invite", EnvLevel::Debug);
     if std::env::var("TEST_LOG").is_ok() {
@@ -68,7 +70,7 @@ impl TestApp {
     }
 }
 
-/// SINCE I DROP DOCKER INSTANCE SO OFTEN I WON'T CLEAN UP
+//? SINCE I DROP DOCKER INSTANCE SO OFTEN I WON'T CLEAN UP
 // impl Drop for TestApp {
 //     fn drop(&mut self) {
 //         let db_config = self.config.database.clone();
@@ -84,6 +86,15 @@ impl TestApp {
 //         .join()
 //         .unwrap_or_else(|e| panic!("Failed cleaning up test db with error: {:?}", e));
 //     }
+// }
+
+// async fn cleanup_db(config: DatabaseConfig) {
+//     let mut conn = PgConnection::connect_with(&config.without_db())
+//         .await
+//         .expect("Failed to form db connection for cleanup");
+//     conn.execute(format!(r#"DROP DATABASE "{}";"#, config.name).as_str())
+//         .await
+//         .expect("Failed dropping test db");
 // }
 
 async fn configure_db(config: &DatabaseConfig) -> PgPool {
@@ -107,15 +118,6 @@ async fn configure_db(config: &DatabaseConfig) -> PgPool {
 
     db_pool
 }
-
-// async fn cleanup_db(config: DatabaseConfig) {
-//     let mut conn = PgConnection::connect_with(&config.without_db())
-//         .await
-//         .expect("Failed to form db connection for cleanup");
-//     conn.execute(format!(r#"DROP DATABASE "{}";"#, config.name).as_str())
-//         .await
-//         .expect("Failed dropping test db");
-// }
 
 #[allow(dead_code)]
 const TEST_USER: &str = "user_2ysgqtTDuD2gPviOwynN5mlL36f";

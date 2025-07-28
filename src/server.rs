@@ -24,7 +24,7 @@ impl Server {
     pub async fn build(config: Config) -> Result<Self, anyhow::Error> {
         // dep inj
         let db_pool = get_connection_pool(&config.database);
-        let redis_conn = redis::Client::open(config.redis_url.expose_secret())?
+        let redis_conn = redis::Client::open(config.redis_url)?
             .get_multiplexed_async_connection()
             .await?;
         let clerk = Clerk::new(ClerkConfiguration::new(

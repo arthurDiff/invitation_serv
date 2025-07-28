@@ -35,7 +35,7 @@ impl TryFrom<String> for Environment {
 pub struct Config {
     pub server: ServerConfig,
     pub database: DatabaseConfig,
-    pub redis_url: SecretString,
+    pub redis_url: String,
     pub clerk_key: SecretString,
 }
 
