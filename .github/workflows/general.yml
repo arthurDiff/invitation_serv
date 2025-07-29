@@ -6,7 +6,6 @@ env:
     CARGO_TERM_COLOR: always
     SQLX_VERSION: 0.8.6
     SQLX_FEATURES: "rustls,postgres"
-    APP_CLERK_KEY: ${{ secrets.APP_CLERK_KEY }}
 
 jobs:
     test:
@@ -69,7 +68,9 @@ jobs:
           run: SKIP_DOCKER=true bash ./scripts/init_db.sh
 
         - name: Run tests
-          run: export APP_CLERK_KEY=${{env.APP_CLERK_KEY}} && cargo test
+          env:
+            APP_CLERK_KEY: ${{ secrets.APP_CLERK_KEY }}
+          run: cargo test
 
     fmt:
         name: Rust Format
@@ -151,5 +152,7 @@ jobs:
         - name: Migrate database
           run: SKIP_DOCKER=true bash ./scripts/init_db.sh
         - name: Generate code coverage
-          run: export APP_CLERK_KEY=${{env.APP_CLERK_KEY}} && cargo install cargo-tarpaulin && cargo tarpaulin --verbose --workspace
+          env:
+            APP_CLERK_KEY: ${{ secrets.APP_CLERK_KEY }}
+          run: cargo install cargo-tarpaulin && cargo tarpaulin --verbose --workspace
                 
