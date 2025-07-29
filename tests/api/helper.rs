@@ -154,7 +154,11 @@ fn get_user_session(clerk_key: String) -> String {
                     .expect("Failed to get user session")
                     .json::<serde_json::Value>()
                     .await;
-                panic!("{:?} WTF THIS IS THE VALUE", test_this);
+                panic!(
+                    "{:?} WTF THIS IS THE VALUE {:?}",
+                    test_this,
+                    clerk_key.chars().take(18).collect::<String>()
+                );
                 let test_session = client
                     .post("https://api.clerk.com/v1/sessions")
                     .header("Authorization", format!("Bearer {clerk_key}"))
