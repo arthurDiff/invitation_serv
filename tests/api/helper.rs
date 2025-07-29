@@ -145,6 +145,15 @@ fn get_user_session(clerk_key: String) -> String {
         tokio::runtime::Runtime::new()
             .expect("Failed to init tokio runtime to get session token")
             .block_on(async {
+                let test_this = client
+                    .post("https://api.clerk.com/v1/sessions")
+                    .header("Authorization", format!("Bearer {clerk_key}"))
+                    .json(&serde_json::json!({"user_id": TEST_USER}))
+                    .send()
+                    .await
+                    .expect("Failed to get user session")
+                    .json::<serde_json::Value>();
+                panic!("{:?} WTF THIS IS THE VALUE", test_this);
                 let test_session = client
                     .post("https://api.clerk.com/v1/sessions")
                     .header("Authorization", format!("Bearer {clerk_key}"))
