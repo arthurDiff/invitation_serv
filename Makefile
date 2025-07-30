@@ -24,10 +24,10 @@ init-db:
 # stop-db:
 #   docker stop invite_db && docker rm invite_db 
 run-docker:
-	docker compose -f docker/docker-compose.yml up -d \
+	docker compose -f docker/docker-compose.dev.yml up -d \
 	&& ./scripts/init_db.sh
 down-docker:
-	docker compose -f docker/docker-compose.yml down 
+	docker compose -f docker/docker-compose.dev.yml down 
 db:
 	psql -h localhost -p 5431 -U postgres -d postgres
 db-add:
