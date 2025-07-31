@@ -3,7 +3,7 @@ server:
   hmac_secret: "uber_secret_here_replace_later"
 database:
   host: "localhost"
-  port: 5431
+  port: 5432
   name: "invite"
   username: "postgres"
   password: "password"

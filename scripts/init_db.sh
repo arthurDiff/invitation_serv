@@ -13,7 +13,7 @@ fi
 DB_USER="${POSTGRES_USER:=postgres}"
 DB_PASSWORD="${POSTGRES_PASSWORD:=password}"
 DB_NAME="${POSTGRES_DB=invite}"
-DB_PORT="${POSGRES_PORT:=5431}"
+DB_PORT="${POSGRES_PORT:=5432}"
 DB_HOST="${POSTGRES_HOST:=localhost}"
 
 #docker
