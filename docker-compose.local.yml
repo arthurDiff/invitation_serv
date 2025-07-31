@@ -1,4 +1,4 @@
-name: invite_server 
+name: invite_server_local
 
 services:
   postgres:

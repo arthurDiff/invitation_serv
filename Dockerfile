@@ -21,5 +21,8 @@ RUN cargo build --release --target x86_64-unknown-linux-musl
 # Create a new stage with a minimal image
 FROM scratch
 COPY --from=builder /invite_server/target/x86_64-unknown-linux-musl/release/invite_server /invite_server
+COPY configuration configuration
+ENV APP_ENV prod 
+ENV APP_CLERK_KEY ${APP_CLERK_KEY}
 ENTRYPOINT ["/invite_server"]
 EXPOSE 3000

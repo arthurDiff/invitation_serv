@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO member (user_id,event_id,role)\n        VALUES ($1, $2, 'owner'::member_role);",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "21a367f3f446406d0a551c1ab049706ea47b730e062f5b384cc9572c7417855c"
+}
