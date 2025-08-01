@@ -3,7 +3,8 @@ name: invite_server
 services:
   api:
     environment:
-      DATABASE_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db:5432/invite"
+      DATABASE_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db:5432"
+      APP_CLERK_KEY: ${APP_CLERK_KEY}
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,20 +12,20 @@ services:
       - 8000:8000
     depends_on:
       - db 
-      - redis 
+      - cache 
   db:
-    image: postgres
+    image: postgres:17.5-alpine
     restart: always
     environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_USER=postgres
-      - POSTGRES_DB=invite
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
       - 5432:5432
     volumes:
       - db:/var/lib/postgresql/data
-  redis:
-    image: redis:latest
+      - ./migrations:/docker-entrypoint-initdb.d
+  cache:
+    image: redis:8.0-alpine
     restart: always
     ports:
       - 6379:6379
@@ -34,9 +35,11 @@ services:
       timeout: 3s
       retries: 5
     command: ["redis-server"]
+    volumes:
+      - cache:/data
 
 volumes:
   db:
     driver: local
-  redis:
+  cache:
     driver: local

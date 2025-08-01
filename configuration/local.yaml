@@ -4,3 +4,4 @@ server:
 database:
   host: "localhost"
   require_ssl: false
+redis_url: "redis://127.0.0.1:6379"

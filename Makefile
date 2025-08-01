@@ -27,7 +27,7 @@ down-docker:
 run-app:
 	docker compose -f docker-compose.yml up
 down-app:
-	docker compose -f docker-compose.yml down && docker image rm invite_server-api
+	docker compose -f docker-compose.yml down --volumes
 db:
 	psql -h localhost -p 5432 -U postgres -d postgres
 db-add:

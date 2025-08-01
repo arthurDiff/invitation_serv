@@ -11,7 +11,7 @@ use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
 
 use crate::{
-    config::{Config, DatabaseConfig},
+    config::Config,
     routes::{create_event, get_event, get_events, health_check},
 };
 
@@ -22,8 +22,8 @@ pub struct Server {
 
 impl Server {
     pub async fn build(config: Config) -> Result<Self, anyhow::Error> {
-        // dep inj
-        let db_pool = get_connection_pool(&config.database);
+        // dep inj start
+        let db_pool = PgPoolOptions::new().connect_lazy_with(config.database.with_db());
         let redis_conn = redis::Client::open(config.redis_url)?
             .get_multiplexed_async_connection()
             .await?;
@@ -33,7 +33,7 @@ impl Server {
             Some(config.clerk_key.expose_secret().into()),
             None,
         ));
-        // end dep inj
+        // dep inj end
 
         let listener = TcpListener::bind(format!("{}:{}", config.server.host, config.server.port))?;
         let port = listener.local_addr()?.port();
@@ -83,10 +83,6 @@ async fn run(
     })
     .listen(listener)?
     .run())
-}
-
-fn get_connection_pool(config: &DatabaseConfig) -> PgPool {
-    PgPoolOptions::new().connect_lazy_with(config.with_db())
 }
 
 /*

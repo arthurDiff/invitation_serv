@@ -4,3 +4,4 @@ server:
 database:
   host: "db"
   require_ssl: true
+redis_url: "redis://cache:6379"

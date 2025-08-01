@@ -37,7 +37,7 @@ pub async fn create_event(
         .attach("create_event", &sess.sub);
 
     let mut redis_conn = redis.get_ref().clone();
-    log::info!("\nwth{:?}\n", &idem_key);
+
     if let Some(saved_res) = try_get_response(&mut redis_conn, &idem_key).await? {
         log::info!("Returning cached result from idem-key: {:?}", &idem_key);
         return Ok(saved_res);
